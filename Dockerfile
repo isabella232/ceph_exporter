@@ -15,7 +15,7 @@ RUN apt-get install -y --force-yes librados-dev librbd-dev
 
 RUN \
   mkdir -p /goroot && \
-  curl https://storage.googleapis.com/golang/go1.5.2.linux-amd64.tar.gz | tar xvzf - -C /goroot --strip-components=1
+  curl https://storage.googleapis.com/golang/go1.6.2.linux-amd64.tar.gz | tar xvzf - -C /goroot --strip-components=1
 
 ADD . $APPLOC
 WORKDIR $APPLOC
