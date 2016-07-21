@@ -602,36 +602,30 @@ func (c *ClusterHealthCollector) collect() error {
 
 	pgMap, err := stats.PGMap.Num.Float64()
 	if err != nil {
-		log.Println("error on pgMap", err)
 		return err
 	}
-	log.Println("pgMap", pgMap)
 	c.NumPGs.Set(pgMap)
 
 	dataBytes, err := stats.PGMap.DataBytes.Float64()
 	if err != nil {
-		log.Println("error on dataBytes", err)
 		return err
 	}
 	c.DataBytesPGs.Set(dataBytes)
 
 	usedBytes, err := stats.PGMap.UsedBytes.Float64()
 	if err != nil {
-		log.Println("error on usedBytes", err)
 		return err
 	}
 	c.UsedBytesPGs.Set(usedBytes)
 
 	availBytes, err := stats.PGMap.AvailBytes.Float64()
 	if err != nil {
-		log.Println("error on availBytes", err)
 		return err
 	}
 	c.AvailBytesPGs.Set(availBytes)
 
 	totalBytes, err := stats.PGMap.TotalBytes.Float64()
 	if err != nil {
-		log.Println("error on totalBytes", err)
 		return err
 	}
 	c.TotalBytesPGs.Set(totalBytes)
