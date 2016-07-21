@@ -83,6 +83,21 @@ type ClusterHealthCollector struct {
 	// in that state.
 	StuckStalePGs prometheus.Gauge
 
+	// NumPGs Total number of Active PGs in the cluster
+	NumPGs prometheus.Gauge
+
+	// DataBytesPGs shows data bytes of PGs in the cluster
+	DataBytesPGs prometheus.Gauge
+
+	// UsedBytesPGs shows total used bytes of PGs in the cluster
+	UsedBytesPGs prometheus.Gauge
+
+	// AvailBytesPGs shows total available bytes of PGs in the cluster
+	AvailBytesPGs prometheus.Gauge
+
+	// TotalBytesPGs show total bytes of PGs in the cluster.
+	TotalBytesPGs prometheus.Gauge
+
 	// DegradedObjectsCount gives the no. of RADOS objects are constitute the degraded PGs.
 	DegradedObjectsCount prometheus.Gauge
 
@@ -213,6 +228,41 @@ func NewClusterHealthCollector(conn Conn) *ClusterHealthCollector {
 				Namespace: cephNamespace,
 				Name:      "stuck_stale_pgs",
 				Help:      "No. of stuck stale PGs in the cluster",
+			},
+		),
+		NumPGs: prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: cephNamespace,
+				Name:      "pgs_num",
+				Help:      "No. of active PGs in the cluster",
+			},
+		),
+		DataBytesPGs: prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: cephNamespace,
+				Name:      "pgs_data_bytes",
+				Help:      "Data bytes of PGs in the cluster",
+			},
+		),
+		UsedBytesPGs: prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: cephNamespace,
+				Name:      "pgs_used_bytes",
+				Help:      "Used bytes of PGs in the cluster",
+			},
+		),
+		AvailBytesPGs: prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: cephNamespace,
+				Name:      "pgs_avail_bytes",
+				Help:      "Available bytes of PGs in the cluster",
+			},
+		),
+		TotalBytesPGs: prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: cephNamespace,
+				Name:      "pgs_total_bytes",
+				Help:      "Total bytes of PGs in the cluster",
 			},
 		),
 		DegradedObjectsCount: prometheus.NewGauge(
@@ -349,6 +399,11 @@ func (c *ClusterHealthCollector) metricsList() []prometheus.Metric {
 		c.ClientIOOps,
 		c.ClientIOReadOps,
 		c.ClientIOWriteOps,
+		c.NumPGs,
+		c.AvailBytesPGs,
+		c.UsedBytesPGs,
+		c.TotalBytesPGs,
+		c.DataBytesPGs,
 	}
 }
 
@@ -368,6 +423,13 @@ type cephHealthStats struct {
 			NumRemappedPGs json.Number `json:"num_remapped_pgs"`
 		} `json:"osdmap"`
 	} `json:"osdmap"`
+	PGMap struct {
+		Num        json.Number `json:"num_pgs"`
+		DataBytes  json.Number `json:"data_bytes"`
+		UsedBytes  json.Number `json:"bytes_used"`
+		AvailBytes json.Number `json:"bytes_avail"`
+		TotalBytes json.Number `json:"bytes_total"`
+	} `json:"pgmap"`
 }
 
 func (c *ClusterHealthCollector) collect() error {
@@ -537,6 +599,42 @@ func (c *ClusterHealthCollector) collect() error {
 		return err
 	}
 	c.RemappedPGs.Set(remappedPGs)
+
+	pgMap, err := stats.PGMap.Num.Float64()
+	if err != nil {
+		log.Println("error on pgMap", err)
+		return err
+	}
+	log.Println("pgMap", pgMap)
+	c.NumPGs.Set(pgMap)
+
+	dataBytes, err := stats.PGMap.DataBytes.Float64()
+	if err != nil {
+		log.Println("error on dataBytes", err)
+		return err
+	}
+	c.DataBytesPGs.Set(dataBytes)
+
+	usedBytes, err := stats.PGMap.UsedBytes.Float64()
+	if err != nil {
+		log.Println("error on usedBytes", err)
+		return err
+	}
+	c.UsedBytesPGs.Set(usedBytes)
+
+	availBytes, err := stats.PGMap.AvailBytes.Float64()
+	if err != nil {
+		log.Println("error on availBytes", err)
+		return err
+	}
+	c.AvailBytesPGs.Set(availBytes)
+
+	totalBytes, err := stats.PGMap.TotalBytes.Float64()
+	if err != nil {
+		log.Println("error on totalBytes", err)
+		return err
+	}
+	c.TotalBytesPGs.Set(totalBytes)
 
 	return nil
 }

@@ -286,6 +286,45 @@ func TestClusterHealthCollector(t *testing.T) {
 		},
 		{
 			input: `
+{
+	"osdmap": {
+		"osdmap": {
+			"num_osds": 1200,
+			"num_up_osds": 1200,
+			"num_in_osds": 1190,
+			"num_remapped_pgs": 10
+		}
+	},
+	"pgmap": {
+        "pgs_by_state": [
+            {
+                "state_name": "active+undersized+degraded",
+                "count": 191
+            },
+            {
+                "state_name": "active+remapped",
+                "count": 129
+            }
+        ],
+        "version": 210,
+        "num_pgs": 320,
+        "data_bytes": 0,
+        "bytes_used": 163749888,
+        "bytes_avail": 45507944448,
+        "bytes_total": 45671694336
+    },
+	"health": { "overall_status": "HEALTH_ERR" } }`,
+			regexes: []*regexp.Regexp{
+				regexp.MustCompile(`health_status 2`),
+				regexp.MustCompile(`pgs_num 320`),
+				regexp.MustCompile(`pgs_data_bytes 0`),
+				regexp.MustCompile(`pgs_used_bytes 1.63749888e`),
+				regexp.MustCompile(`pgs_avail_bytes 4.5507944448e`),
+				regexp.MustCompile(`pgs_total_bytes 4.5671694336e`),
+			},
+		},
+		{
+			input: `
 $ sudo ceph -s
     cluster eff51be8-938a-4afa-b0d1-7a580b4ceb37
      health HEALTH_OK
