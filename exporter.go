@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/AcalephStorage/ceph_exporter/collectors"
+	"github.com/digitalocean/ceph_exporter/collectors"
 
 	"github.com/ceph/go-ceph/rados"
 	"github.com/prometheus/client_golang/prometheus"
@@ -50,7 +50,7 @@ func NewCephExporter(conn *rados.Conn) *CephExporter {
 			collectors.NewPoolUsageCollector(conn),
 			collectors.NewClusterHealthCollector(conn),
 			collectors.NewMonitorCollector(conn),
-			collectors.NewOsdCollector(conn),
+			collectors.NewOSDCollector(conn),
 		},
 	}
 }
