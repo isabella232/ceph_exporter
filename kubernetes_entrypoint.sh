@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Kubernetes currently only supports a secret or configmap in a single dir.
 # This symlink hack makes sure we have a standard ceph config with both conf and keyrings
 
