@@ -81,10 +81,11 @@ func main() {
 		metricsPath = flag.String("telemetry.path", "/metrics", "URL path for surfacing collected metrics")
 
 		cephConfig = flag.String("ceph.config", "", "path to ceph config file")
+		cephUser   = flag.String("ceph.user", "admin", "Ceph user to connect to cluster.")
 	)
 	flag.Parse()
 
-	conn, err := rados.NewConn()
+	conn, err := rados.NewConnWithUser(*cephUser)
 	if err != nil {
 		log.Fatalf("cannot create new ceph connection: %s", err)
 	}
@@ -107,7 +108,13 @@ func main() {
 
 	http.Handle(*metricsPath, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, *metricsPath, http.StatusMovedPermanently)
+		w.Write([]byte(`<html>
+			<head><title>Ceph Exporter</title></head>
+			<body>
+			<h1>Ceph Exporter</h1>
+			<p><a href='` + *metricsPath + `'>Metrics</a></p>
+			</body>
+			</html>`))
 	})
 
 	log.Printf("Starting ceph exporter on %q", *addr)
